@@ -1,0 +1,112 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                   This model is based on the interactions between the 3 types of pigment cells known in zebrafish                    ;;
+;;                        Let see what pattern will be formed if we put in a plate the 3 types of cells together                        ;;
+;; For that, we can control the angle of mobility of cells, the long and short range interactions and the number of each type of cells  ;;
+;;                                       ref: Singh et al., 2015 DOI: 10.1126/science.aaa2804                                           ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+;;creation of three populations of turtles
+breed [melanophores melanophore]
+breed [xanthophores xanthophore]
+breed [iridophores iridophore]
+
+;;setup command
+to setup
+  clear-all
+  reset-ticks
+  setup-patches
+  create-melanophores num-melanophores [set color black set shape "circle" setxy random-xcor random-ycor set size 1]
+  create-xanthophores num-xanthophores [set color orange set shape "circle" setxy random-xcor random-ycor set size 1]
+  create-iridophores num-iridophores [set color blue set shape "circle" setxy random-xcor random-ycor set size 1]
+end
+
+;;go command
+to go
+
+  tick
+
+  ask turtles
+  [
+    set heading ((heading + 360 / 2) - (random 360))
+    forward 1
+  ]
+
+  ask melanophores
+  [
+    ;;if short-range interaction of ir over mel: repel
+    let close-ir one-of other iridophores in-radius ( close-distance )
+    if close-ir != nobody [
+    face close-ir
+      back 1 ]
+
+    ;;if short-range interaction of xan over mel: repel
+    let close-xan one-of other xanthophores in-radius ( close-distance )
+    if close-xan != nobody [
+    face close-xan
+       back 1 ]
+
+    ;;if long-range interaction of xan over mel: attraction
+    let long-xan one-of other xanthophores in-radius ( long-distance - close-distance - 1 )
+    if long-xan != nobody [
+    face long-xan
+      forward 1 ]
+
+    ;;if long-range interaction of ir over mel: attraction
+    let long-ir one-of other iridophores in-radius ( long-distance - close-distance - 1)
+    if long-ir != nobody [
+    face long-ir
+      forward 1 ]
+
+   ]
+
+  ask xanthophores
+  [ ;;if short-range interaction of mel over xan: repel
+    let close-mel one-of other melanophores in-radius ( close-distance )
+    if close-mel != nobody [
+    face close-mel
+       back 1 ]
+
+    ;;if short-range interaction of ir over xan: attraction
+    let close-ir one-of other iridophores in-radius ( close-distance )
+    if close-ir != nobody [
+    face close-ir
+      back 1 ]
+
+    ;;if long-range interaction of ir over xan: repel
+    let long-ir one-of other iridophores in-radius ( long-distance - close-distance - 1 )
+    if long-ir != nobody [
+    face long-ir
+      back 1 ]
+  ]
+
+ ask iridophores
+  [ ;;if short-range interaction of xan over ir: attraction
+    let close-xan one-of other xanthophores in-radius ( close-distance )
+    if close-xan != nobody [
+    face close-xan
+       forward 1 ]
+
+    ;;if short-range interaction of mel over ir: repel
+    let close-mel one-of other melanophores in-radius ( close-distance )
+    if close-mel != nobody [
+    face close-mel
+       back 1 ]
+
+    ;;if long-range interaction of xan over ir: repel
+    let long-xan one-of other xanthophores in-radius ( long-distance - close-distance - 1 )
+    if long-xan != nobody [
+    face long-xan
+      back 1 ]
+
+   ;if link-neighbors = iridophores [ forward 2]
+  ]
+
+end
+
+to setup-patches
+  ask patches [ set pcolor white ]
+end
+
+
